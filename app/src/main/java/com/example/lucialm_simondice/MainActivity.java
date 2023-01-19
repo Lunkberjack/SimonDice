@@ -1,9 +1,12 @@
 package com.example.lucialm_simondice;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.view.MenuInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -19,6 +22,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ArrayList<Button> botones = new ArrayList<Button>();
     private TextView textoCifrasRecordar, textoRespuesta;
+    private Context contexto;
     private String numeroRecordar, numeroJugador;
     private Button botonIniciar;
     private MediaPlayer mp;
@@ -31,8 +35,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        contexto = getApplicationContext();
 
         numeroRecordar = "1";
+
+        mp = MediaPlayer.create(contexto, R.raw.illojuan1);
+        mp.start();
+
         //numeroRecordar = String.valueOf(rnd.nextInt(10));
         textoRespuesta = findViewById(R.id.textoRespuesta);
         textoCifrasRecordar = findViewById(R.id.textoCifrasRecordar);
@@ -65,15 +74,31 @@ public class MainActivity extends AppCompatActivity {
         inicializarBotones(botones, dificultad);
     }
 
+    private void bloquearBotones(ArrayList<Button> botones) {
+        for (Button x : botones) {
+            x.setEnabled(false);
+        }
+    }
+
+    private void desbloquearBotones(ArrayList<Button> botones) {
+        for (Button x : botones) {
+            x.setEnabled(true);
+        }
+    }
+
     private void inicializarBotones(ArrayList<Button> botones, int dificultad) {
-        for(Button x : botones) {
+        for (Button x : botones) {
             x.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     // Si es la primera vez que se juega (numeroJugador igual a null), solo ponemos el número del botón,
                     // pero si ya hemos acumulado números se lo sumamos a la String.
                     numeroJugador = (numeroJugador == null) ? (String) x.getText() : numeroJugador + x.getText();
-                    manejoTurno(dificultad);
+                    try {
+                        manejoTurno(dificultad);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
             });
             x.setEnabled(true);
@@ -81,29 +106,98 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean comprobarRespuesta() {
-        if(numeroJugador.equals(numeroRecordar)) {
+        if (numeroJugador.equals(numeroRecordar)) {
             return true;
         } else {
             return false;
         }
     }
 
-    private void manejoTurno(int dificultad) {
-        if(comprobarRespuesta() && numeroRecordar.length() == numeroJugador.length()) {
+    private void manejoTurno(int dificultad) throws InterruptedException {
+        bloquearBotones(botones);
+        System.out.println("Botones bloqueados");
+        if (numeroRecordar.length() == numeroJugador.length() && comprobarRespuesta()) {
             contadorTurnos++;
             int ultimoGenerado = rnd.nextInt(10);
             numeroRecordar = (numeroRecordar == null) ? String.valueOf(ultimoGenerado) : numeroRecordar + ultimoGenerado;
+
+            for (int i = 0; i < numeroRecordar.length(); i++) {
+                switch (numeroRecordar.charAt(i)) {
+                    case '0':
+                        Thread.sleep(dificultad == TURNOS_FACIL ? 800 : 400);
+                        mp = MediaPlayer.create(contexto, R.raw.illojuan0);
+                        mp.start();
+                        break;
+                    case '1':
+                        Thread.sleep(dificultad == TURNOS_FACIL ? 800 : 400);
+                        mp = MediaPlayer.create(contexto, R.raw.illojuan1);
+                        mp.start();
+                        break;
+                    case '2':
+                        Thread.sleep(dificultad == TURNOS_FACIL ? 800 : 400);
+                        mp = MediaPlayer.create(contexto, R.raw.illojuan2);
+                        mp.start();
+                        break;
+                    case '3':
+                        Thread.sleep(dificultad == TURNOS_FACIL ? 800 : 400);
+                        mp = MediaPlayer.create(contexto, R.raw.illojuan3);
+                        mp.start();
+                        break;
+                    case '4':
+                        Thread.sleep(dificultad == TURNOS_FACIL ? 800 : 400);
+                        mp = MediaPlayer.create(contexto, R.raw.illojuan4);
+                        mp.start();
+                        break;
+                    case '5':
+                        Thread.sleep(dificultad == TURNOS_FACIL ? 800 : 400);
+                        mp = MediaPlayer.create(contexto, R.raw.illojuan5);
+                        mp.start();
+                        break;
+                    case '6':
+                        Thread.sleep(dificultad == TURNOS_FACIL ? 800 : 400);
+                        mp = MediaPlayer.create(contexto, R.raw.illojuan6);
+                        mp.start();
+                        break;
+                    case '7':
+                        Thread.sleep(dificultad == TURNOS_FACIL ? 800 : 400);
+                        mp = MediaPlayer.create(contexto, R.raw.illojuan7);
+                        mp.start();
+                        break;
+                    case '8':
+                        Thread.sleep(dificultad == TURNOS_FACIL ? 800 : 400);
+                        mp = MediaPlayer.create(contexto, R.raw.illojuan8);
+                        mp.start();
+                        break;
+                    case '9':
+                        Thread.sleep(dificultad == TURNOS_FACIL ? 800 : 400);
+                        mp = MediaPlayer.create(contexto, R.raw.illojuan9);
+                        mp.start();
+                        break;
+                }
+            }
+            desbloquearBotones(botones);
             textoCifrasRecordar.setText("Asertao nene");
             numeroJugador = "";
 
-            if(contadorTurnos == dificultad) {
+            if (contadorTurnos == dificultad) {
+                mp.release(); // Libera recursos
                 // TODO: Dialog con que ha ganao
                 textoCifrasRecordar.setText("Has ganao");
+
             }
         } else {
             // TODO: Dialog con que la ha cagao (decirle los turnos que ha durao)
             // TEST:
+            desbloquearBotones(botones);
             textoCifrasRecordar.setText(numeroJugador + " " + numeroRecordar);
+            mp.release();
         }
+    }
+
+    // TODO: No es así pero te haces a la idea
+    @NonNull
+    @Override
+    public MenuInflater getMenuInflater() {
+        return super.getMenuInflater();
     }
 }
