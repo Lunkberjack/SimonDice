@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">LucíaLM - Simón Dice</string>
+    <string name="dificultad">Modos de juego</string>
 </resources>
