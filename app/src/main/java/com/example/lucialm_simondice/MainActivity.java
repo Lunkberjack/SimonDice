@@ -25,9 +25,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
-    private final int TURNOS_FACIL = 5, TURNOS_DIFICIL = 20;
-    // Para que cuando iniciemos desde una dificultad, el juego no
-    // vuelva a la dificultad por defecto.
+    private final int TURNOS_FACIL = 5, TURNOS_DIFICIL = 10;
     private int dificultadActual = TURNOS_FACIL;
 
     private ArrayList<Button> botones = new ArrayList<Button>();
@@ -36,10 +34,10 @@ public class MainActivity extends AppCompatActivity {
     private Animation scaleUp, scaleDown;
     private Button botonIniciar;
     private Context contexto;
-    private MediaPlayer mp;
+    private MediaPlayer mp, mp1, mp2, mp3, mp4, mp5, mp6, mp7, mp8, mp9;
 
     private Random rnd = new Random();
-    private int contadorTurnos;
+    private int contadorTurnos, contadorBotones;
     private boolean ganado = false;
     private char posicion = 0;
 
@@ -48,6 +46,18 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         contexto = getApplicationContext();
+
+        // MediaPlayers
+        mp = MediaPlayer.create(contexto, R.raw.illojuan0);
+        mp1 = MediaPlayer.create(contexto, R.raw.illojuan1);
+        mp2 = MediaPlayer.create(contexto, R.raw.illojuan2);
+        mp3 = MediaPlayer.create(contexto, R.raw.illojuan3);
+        mp4 = MediaPlayer.create(contexto, R.raw.illojuan4);
+        mp5 = MediaPlayer.create(contexto, R.raw.illojuan5);
+        mp6 = MediaPlayer.create(contexto, R.raw.illojuan6);
+        mp7 = MediaPlayer.create(contexto, R.raw.illojuan7);
+        mp8 = MediaPlayer.create(contexto, R.raw.illojuan8);
+        mp9 = MediaPlayer.create(contexto, R.raw.illojuan9);
 
         // Animaciones -------------------------------------------------------------------------------------------------
         scaleUp = AnimationUtils.loadAnimation(contexto, R.anim.scale_up);
@@ -63,7 +73,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 // Funcionalidad
-                recreate();
+                Intent intent = new Intent(contexto, MainActivity.class);
+                startActivity(intent);
+                finish();
 
                 // La animación termina de ejecutarse (100ms) antes de que la siguiente comience
                 botonIniciar.startAnimation(scaleUp);
@@ -100,44 +112,34 @@ public class MainActivity extends AppCompatActivity {
 
         switch (numeroRecordar) {
             case "0":
-                mp = MediaPlayer.create(contexto, R.raw.illojuan0);
                 mp.start();
                 break;
             case "1":
-                mp = MediaPlayer.create(contexto, R.raw.illojuan1);
-                mp.start();
+                mp1.start();
                 break;
             case "2":
-                mp = MediaPlayer.create(contexto, R.raw.illojuan2);
-                mp.start();
+                mp2.start();
                 break;
             case "3":
-                mp = MediaPlayer.create(contexto, R.raw.illojuan3);
-                mp.start();
+                mp3.start();
                 break;
             case "4":
-                mp = MediaPlayer.create(contexto, R.raw.illojuan4);
-                mp.start();
+                mp4.start();
                 break;
             case "5":
-                mp = MediaPlayer.create(contexto, R.raw.illojuan5);
-                mp.start();
+                mp5.start();
                 break;
             case "6":
-                mp = MediaPlayer.create(contexto, R.raw.illojuan6);
-                mp.start();
+                mp6.start();
                 break;
             case "7":
-                mp = MediaPlayer.create(contexto, R.raw.illojuan7);
-                mp.start();
+                mp7.start();
                 break;
             case "8":
-                mp = MediaPlayer.create(contexto, R.raw.illojuan8);
-                mp.start();
+                mp8.start();
                 break;
             case "9":
-                mp = MediaPlayer.create(contexto, R.raw.illojuan9);
-                mp.start();
+                mp9.start();
                 break;
         }
 
@@ -178,12 +180,20 @@ public class MainActivity extends AppCompatActivity {
             x.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    // TextField (se va rellenando hasta el penúltimo número a adivinar)
+                    // TextField (se va rellenando hasta el penúltimo número adivinado)
                     textoRespuesta.setText((textoRespuesta == null) ? x.getText() : textoRespuesta.getText() + String.valueOf(x.getText()));
 
-                    // Animación
+                    // Animación y efecto de sonido
                     x.startAnimation(scaleUp);
                     x.startAnimation(scaleDown);
+                    MediaPlayer mpBoton = MediaPlayer.create(contexto, R.raw.jump8bit);
+                    mpBoton.start();
+                    mpBoton.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                        @Override
+                        public void onCompletion(MediaPlayer mp) {
+                            mpBoton.release();
+                        }
+                    });
 
                     // Si es la primera vez que se juega (numeroJugador igual a null), solo ponemos el número del botón,
                     // pero si ya hemos acumulado números se lo sumamos a la String.
@@ -236,44 +246,34 @@ public class MainActivity extends AppCompatActivity {
                         if(numeroRecordar == null || finalI >= numeroRecordar.length()) return;
                         switch (numeroRecordar.charAt(finalI)) {
                             case '0':
-                                mp = MediaPlayer.create(contexto, R.raw.illojuan0);
                                 mp.start();
                                 break;
                             case '1':
-                                mp = MediaPlayer.create(contexto, R.raw.illojuan1);
-                                mp.start();
+                                mp1.start();
                                 break;
                             case '2':
-                                mp = MediaPlayer.create(contexto, R.raw.illojuan2);
-                                mp.start();
+                                mp2.start();
                                 break;
                             case '3':
-                                mp = MediaPlayer.create(contexto, R.raw.illojuan3);
-                                mp.start();
+                                mp3.start();
                                 break;
                             case '4':
-                                mp = MediaPlayer.create(contexto, R.raw.illojuan4);
-                                mp.start();
+                                mp4.start();
                                 break;
                             case '5':
-                                mp = MediaPlayer.create(contexto, R.raw.illojuan5);
-                                mp.start();
+                                mp5.start();
                                 break;
                             case '6':
-                                mp = MediaPlayer.create(contexto, R.raw.illojuan6);
-                                mp.start();
+                                mp6.start();
                                 break;
                             case '7':
-                                mp = MediaPlayer.create(contexto, R.raw.illojuan7);
-                                mp.start();
+                                mp7.start();
                                 break;
                             case '8':
-                                mp = MediaPlayer.create(contexto, R.raw.illojuan8);
-                                mp.start();
+                                mp8.start();
                                 break;
                             case '9':
-                                mp = MediaPlayer.create(contexto, R.raw.illojuan9);
-                                mp.start();
+                                mp9.start();
                                 break;
                         }
                         // Para que desbloquee los botones solo cuando los audios hayan finalizado
@@ -283,23 +283,23 @@ public class MainActivity extends AppCompatActivity {
                     }
                     // Delay dinámico dependiendo de la posición en la que deba reproducirse
                     // y de la dificultad (para que no se superpongan)
-                }, dificultadActual == TURNOS_FACIL ? i * 1500 : i * 600);
+                }, dificultadActual == TURNOS_FACIL ? i * 1500 : i * 750);
             }
 
             textoCifrasRecordar.setText("Asertao nene");
             textoRespuesta.setText("");
             numeroJugador = ""; // Resetear el número introducido
 
-            if (contadorTurnos == dificultad) {
+            if (contadorTurnos == dificultadActual) {
                 ganado = true;
                 numeroRecordar = null;
                 numeroJugador = null;
 
                 AlertDialog.Builder victoria = new AlertDialog.Builder(this);
                 victoria.setTitle("¡HAS GANADO!");
-                mp = MediaPlayer.create(contexto, R.raw.plinplinplon);
+                mp = MediaPlayer.create(contexto, R.raw.zelda);
                 mp.start();
-                victoria.setPositiveButton("Entendido", new DialogInterface.OnClickListener() {
+                victoria.setPositiveButton("Garcias :)", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         Toast.makeText(MainActivity.this, "¡Felicidades!", Toast.LENGTH_LONG).show();
                         mp.stop();
@@ -307,7 +307,9 @@ public class MainActivity extends AppCompatActivity {
                 });
                 victoria.setNeutralButton("Otra", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        recreate();
+                        Intent intent = new Intent(contexto, MainActivity.class);
+                        startActivity(intent);
+                        finish();
                         Toast.makeText(MainActivity.this, "Dificultad: " + (dificultadActual == TURNOS_FACIL ? "Fácil" : "Difícil"),
                                 Toast.LENGTH_LONG).show();
                         mp.stop();
@@ -319,11 +321,25 @@ public class MainActivity extends AppCompatActivity {
                 textoCifrasRecordar.setText("Has ganao");
             }
         } else if (!comprobarRespuesta()) {
-            Toast.makeText(contexto, "Fallaste", Toast.LENGTH_SHORT).show();
-        } else {
-            // TODO: Dialog con que la ha cagao (decirle los turnos que ha durao)
-            // TEST:
             textoCifrasRecordar.setText(numeroRecordar);
+            if(numeroRecordar.length() == numeroJugador.length()) {
+                AlertDialog.Builder derrota = new AlertDialog.Builder(this);
+                derrota.setTitle("Has perdido");
+                MediaPlayer mpDerrota = MediaPlayer.create(contexto, R.raw.plinplinplon);
+                mpDerrota.start();
+
+                derrota.setPositiveButton("Otra", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        mpDerrota.stop();
+                        Intent intent = new Intent(contexto, MainActivity.class);
+                        startActivity(intent);
+                        finish();
+                    }
+                });
+
+                AlertDialog alert = derrota.create();
+                alert.show();
+            }
         }
     }
 
@@ -373,12 +389,12 @@ public class MainActivity extends AppCompatActivity {
     public boolean onContextItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.facil:
-                inicializar(TURNOS_FACIL);
                 dificultadActual = TURNOS_FACIL;
+                inicializar(TURNOS_FACIL);
                 return true;
             case R.id.dificil:
-                inicializar(TURNOS_DIFICIL);
                 dificultadActual = TURNOS_DIFICIL;
+                inicializar(TURNOS_DIFICIL);
                 return true;
         }
         return true;
