@@ -9,6 +9,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.MenuInflater;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -23,9 +25,10 @@ public class MainActivity extends AppCompatActivity {
 
     private ArrayList<Button> botones = new ArrayList<Button>();
     private TextView textoCifrasRecordar, textoRespuesta;
-    private Context contexto;
     private String numeroRecordar, numeroJugador;
+    private Animation scaleUp, scaleDown;
     private Button botonIniciar;
+    private Context contexto;
     private MediaPlayer mp;
 
     private Random rnd = new Random();
@@ -44,6 +47,9 @@ public class MainActivity extends AppCompatActivity {
         mp = MediaPlayer.create(contexto, R.raw.illojuan1);
         mp.start();
 
+        scaleUp = AnimationUtils.loadAnimation(contexto, R.anim.scale_up);
+        scaleDown = AnimationUtils.loadAnimation(contexto, R.anim.scale_down);
+
         //numeroRecordar = String.valueOf(rnd.nextInt(10));
         textoRespuesta = findViewById(R.id.textoRespuesta);
         textoCifrasRecordar = findViewById(R.id.textoCifrasRecordar);
@@ -53,6 +59,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 inicializar(dificultadActual);
+                // La animación termina de ejecutarse (100ms) antes de que la siguiente comience
+                botonIniciar.startAnimation(scaleUp);
+                botonIniciar.startAnimation(scaleDown);
             }
         });
 
@@ -93,6 +102,10 @@ public class MainActivity extends AppCompatActivity {
             x.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    // Animación
+                    x.startAnimation(scaleUp);
+                    x.startAnimation(scaleDown);
+
                     // Si es la primera vez que se juega (numeroJugador igual a null), solo ponemos el número del botón,
                     // pero si ya hemos acumulado números se lo sumamos a la String.
                     numeroJugador = (numeroJugador == null) ? (String) x.getText() : numeroJugador + x.getText();
@@ -127,6 +140,7 @@ public class MainActivity extends AppCompatActivity {
             int ultimoGenerado = rnd.nextInt(10);
             numeroRecordar = (numeroRecordar == null) ? String.valueOf(ultimoGenerado) : numeroRecordar + ultimoGenerado;
 
+            // Handler con delay encontrado como alternativa a Thread.sleep, que congelaba la interfaz
             for (int i = 0; i < numeroRecordar.length(); i++) {
                 int finalI = i; // El IDE obliga a añadir esta línea
                 new Handler().postDelayed(new Runnable() {
@@ -178,9 +192,9 @@ public class MainActivity extends AppCompatActivity {
                             desbloquearBotones(botones);
                         }
                     }
-                    // Delay dependiendo de la posición en la que deba reproducirse y de la dificultad
-                    // (para que no se superpongan)
-                }, dificultadActual == TURNOS_FACIL ? i * 1500 : i * 1000);
+                    // Delay dinámico dependiendo de la posición en la que deba reproducirse
+                    // y de la dificultad (para que no se superpongan)
+                }, dificultadActual == TURNOS_FACIL ? i * 1500 : i * 900);
             }
 
             textoCifrasRecordar.setText("Asertao nene");
