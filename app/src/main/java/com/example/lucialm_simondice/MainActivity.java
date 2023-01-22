@@ -26,7 +26,9 @@ import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
     private final int TURNOS_FACIL = 5, TURNOS_DIFICIL = 10;
-    private int dificultadActual = TURNOS_FACIL;
+
+    private final int VICTORIA = 1;
+    private final int DERROTA = 0;
 
     private ArrayList<Button> botones = new ArrayList<Button>();
     private TextView textoCifrasRecordar, textoRespuesta;
@@ -34,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
     private Animation scaleUp, scaleDown;
     private Button botonIniciar;
     private Context contexto;
-    private MediaPlayer mp, mp1, mp2, mp3, mp4, mp5, mp6, mp7, mp8, mp9;
+    private MediaPlayer mp0, mp1, mp2, mp3, mp4, mp5, mp6, mp7, mp8, mp9;
 
     private Random rnd = new Random();
     private int contadorTurnos, contadorBotones;
@@ -46,9 +48,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         contexto = getApplicationContext();
+        contadorBotones = 0;
+        contadorTurnos = 0;
 
         // MediaPlayers
-        mp = MediaPlayer.create(contexto, R.raw.illojuan0);
+        mp0 = MediaPlayer.create(contexto, R.raw.illojuan0);
         mp1 = MediaPlayer.create(contexto, R.raw.illojuan1);
         mp2 = MediaPlayer.create(contexto, R.raw.illojuan2);
         mp3 = MediaPlayer.create(contexto, R.raw.illojuan3);
@@ -77,13 +81,21 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
                 finish();
 
+                // Efecto de sonido
+                MediaPlayer mpInicio = MediaPlayer.create(contexto, R.raw.jump8bit);
+
+                mpInicio.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mp) {
+                        mpInicio.release();
+                    }
+                });
+
+                mpInicio.start();
+
                 // La animación termina de ejecutarse (100ms) antes de que la siguiente comience
                 botonIniciar.startAnimation(scaleUp);
                 botonIniciar.startAnimation(scaleDown);
-
-                // Toast dificultad
-                Toast.makeText(MainActivity.this, "Dificultad: " + (dificultadActual == TURNOS_FACIL ? "Fácil" : "Difícil"),
-                        Toast.LENGTH_LONG).show();
             }
         });
 
@@ -98,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
         botones.add(findViewById(R.id.button8));
         botones.add(findViewById(R.id.button9));
 
-        inicializar(dificultadActual);
+        inicializar(TURNOS_FACIL);
     }
 
     /**
@@ -112,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
 
         switch (numeroRecordar) {
             case "0":
-                mp.start();
+                mp0.start();
                 break;
             case "1":
                 mp1.start();
@@ -143,8 +155,6 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
 
-        contadorTurnos = 0;
-        dificultadActual = dificultad;
         inicializarBotones(botones, dificultad);
     }
 
@@ -180,6 +190,9 @@ public class MainActivity extends AppCompatActivity {
             x.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    // Contador botones
+                    contadorBotones++;
+
                     // TextField (se va rellenando hasta el penúltimo número adivinado)
                     textoRespuesta.setText((textoRespuesta == null) ? x.getText() : textoRespuesta.getText() + String.valueOf(x.getText()));
 
@@ -200,10 +213,17 @@ public class MainActivity extends AppCompatActivity {
                     numeroJugador = (numeroJugador == null) ? (String) x.getText() : numeroJugador + x.getText();
 
                     // Funcionalidad
-                    manejoTurno(dificultad);
+                    manejoTurno(dificultad, x);
                 }
             });
             x.setEnabled(true);
+        }
+    }
+
+    private void manejoDigito(Button boton) {
+        System.out.println("ola");
+        if(!(String.valueOf(boton.getText()) == String.valueOf(numeroRecordar.charAt(contadorBotones - 1)))) {
+            perder();
         }
     }
 
@@ -226,12 +246,11 @@ public class MainActivity extends AppCompatActivity {
      *
      * @param dificultad
      */
-    private void manejoTurno(int dificultad) {
+    private void manejoTurno(int dificultad, Button boton) {
         System.out.println("Botones bloqueados");
 
         if ((numeroRecordar != null) && (numeroRecordar.length() == numeroJugador.length()) && comprobarRespuesta()) {
             bloquearBotones(botones);
-            contadorTurnos++;
 
             int ultimoGenerado = rnd.nextInt(10);
             numeroRecordar = (numeroRecordar == null) ? String.valueOf(ultimoGenerado) : numeroRecordar + ultimoGenerado;
@@ -243,10 +262,10 @@ public class MainActivity extends AppCompatActivity {
                     public void run() {
                         // Detiene la ejecución del método cuando se ha ganado
                         // (si no se pone, el MediaPlayer continúa reproduciendo)
-                        if(numeroRecordar == null || finalI >= numeroRecordar.length()) return;
+                        if (numeroRecordar == null || finalI >= numeroRecordar.length()) return;
                         switch (numeroRecordar.charAt(finalI)) {
                             case '0':
-                                mp.start();
+                                mp0.start();
                                 break;
                             case '1':
                                 mp1.start();
@@ -277,75 +296,162 @@ public class MainActivity extends AppCompatActivity {
                                 break;
                         }
                         // Para que desbloquee los botones solo cuando los audios hayan finalizado
-                        if(finalI == numeroRecordar.length() - 1) {
+                        if (finalI == numeroRecordar.length() - 1) {
                             desbloquearBotones(botones);
                         }
                     }
                     // Delay dinámico dependiendo de la posición en la que deba reproducirse
                     // y de la dificultad (para que no se superpongan)
-                }, dificultadActual == TURNOS_FACIL ? i * 1500 : i * 750);
+                }, dificultad == TURNOS_FACIL ? i * 1500 : i * 750);
             }
 
-            textoCifrasRecordar.setText("Asertao nene");
+            contadorTurnos++;
+            contadorBotones = 0;
+            //textoCifrasRecordar.setText("Cifras a adivinar: " + numeroRecordar.length());
             textoRespuesta.setText("");
             numeroJugador = ""; // Resetear el número introducido
 
-            if (contadorTurnos == dificultadActual) {
-                ganado = true;
-                numeroRecordar = null;
-                numeroJugador = null;
-
-                AlertDialog.Builder victoria = new AlertDialog.Builder(this);
-                victoria.setTitle("¡HAS GANADO!");
-                mp = MediaPlayer.create(contexto, R.raw.zelda);
-                mp.start();
-                victoria.setPositiveButton("Garcias :)", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        Toast.makeText(MainActivity.this, "¡Felicidades!", Toast.LENGTH_LONG).show();
-                        mp.stop();
-                    }
-                });
-                victoria.setNeutralButton("Otra", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        Intent intent = new Intent(contexto, MainActivity.class);
-                        startActivity(intent);
-                        finish();
-                        Toast.makeText(MainActivity.this, "Dificultad: " + (dificultadActual == TURNOS_FACIL ? "Fácil" : "Difícil"),
-                                Toast.LENGTH_LONG).show();
-                        mp.stop();
-                    }
-                });
-                AlertDialog alert = victoria.create();
-                alert.show();
-                // TODO: Dialog con que ha ganao
-                textoCifrasRecordar.setText("Has ganao");
+            if (contadorTurnos == dificultad) {
+                ganar();
             }
         } else if (!comprobarRespuesta()) {
-            textoCifrasRecordar.setText(numeroRecordar);
-            if(numeroRecordar.length() == numeroJugador.length()) {
-                AlertDialog.Builder derrota = new AlertDialog.Builder(this);
-                derrota.setTitle("Has perdido");
-                MediaPlayer mpDerrota = MediaPlayer.create(contexto, R.raw.plinplinplon);
-                mpDerrota.start();
-
-                derrota.setPositiveButton("Otra", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        mpDerrota.stop();
-                        Intent intent = new Intent(contexto, MainActivity.class);
-                        startActivity(intent);
-                        finish();
-                    }
-                });
-
-                AlertDialog alert = derrota.create();
-                alert.show();
+            // Para que si detecta un número introducido mal, detenga el juego directamente y pierda
+            // (antes había que esperar a que se completara una cadena de la longitud del # a recordar)
+            if(!(String.valueOf(boton.getText()).equals(numeroRecordar.charAt(contadorBotones - 1)))) {
+                perder();
             }
+        }
+    }
+
+    /**
+     * Elige el recurso de audio (id tipo int) que se reproducirá en caso
+     * de victoria o de derrota. Elige al azar entre 6 sonidos para cada
+     * ocasión.
+     *
+     * @param victoriaDerrota
+     * @return
+     */
+    private int elegirAudio(int victoriaDerrota) {
+        int azar = rnd.nextInt(6);
+        int recurso = R.raw.illojuan0;
+        if(victoriaDerrota == 1) {
+            switch(azar) {
+                case 0:
+                    recurso = R.raw.epicardo;
+                    break;
+                case 1:
+                    recurso = R.raw.zelda;
+                    break;
+                case 2:
+                    recurso = R.raw.beti;
+                    break;
+                case 3:
+                    recurso = R.raw.shootingstars;
+                    break;
+                case 4:
+                    recurso = R.raw.wenomechainsama;
+                    break;
+                case 5:
+                    recurso = R.raw.bais;
+                    break;
+            }
+        } else {
+            switch(azar) {
+                case 0:
+                    recurso = R.raw.decepcion;
+                    break;
+                case 1:
+                    recurso = R.raw.plinplinplon;
+                    break;
+                case 2:
+                    recurso = R.raw.cagaste;
+                    break;
+                case 3:
+                    recurso = R.raw.nani;
+                    break;
+                case 4:
+                    recurso = R.raw.tobecontinued;
+                    break;
+                case 5:
+                    recurso = R.raw.youdied;
+                    break;
+            }
+        }
+        return recurso;
+    }
+
+    /**
+     * Lógica a seguir cuando se gane el juego.
+     *
+     * Reproduce un sonido y permite crear un nuevo juego o salir (esta última opción
+     * obliga a pulsar el botón de Iniciar para seguir jugando)
+     */
+    private void ganar() {
+        ganado = true;
+        numeroRecordar = null;
+        numeroJugador = null;
+
+        AlertDialog.Builder victoria = new AlertDialog.Builder(this);
+        victoria.setTitle("¡HAS GANADO!");
+        MediaPlayer mpVictoria = MediaPlayer.create(contexto, elegirAudio(VICTORIA));
+        mpVictoria.start();
+        victoria.setPositiveButton("Gracias :)", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                Toast.makeText(MainActivity.this, "¡Felicidades!", Toast.LENGTH_LONG).show();
+                mpVictoria.stop();
+            }
+        });
+        victoria.setNeutralButton("Otra", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                Intent intent = new Intent(contexto, MainActivity.class);
+                startActivity(intent);
+                finish();
+                mpVictoria.stop();
+            }
+        });
+        AlertDialog alert = victoria.create();
+        alert.show();
+        // En el texto del inferior de la pantalla:
+        textoCifrasRecordar.setText("Has ganado :)");
+    }
+
+    /**
+     * Lógica a seguir cuando se pierde.
+     *
+     * Reproduce un sonido y da la opción de intentarlo de nuevo o salir de la aplicación.
+     */
+    private void perder() {
+        if(numeroRecordar.length() == numeroJugador.length()) {
+            AlertDialog.Builder derrota = new AlertDialog.Builder(this);
+            derrota.setTitle("Has perdido");
+
+            MediaPlayer mpDerrota = MediaPlayer.create(contexto, elegirAudio(DERROTA));
+            mpDerrota.start();
+
+            derrota.setPositiveButton("Otra", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    Intent intent = new Intent(contexto, MainActivity.class);
+                    startActivity(intent);
+                    finish();
+                    mpDerrota.stop();
+                }
+            });
+
+            derrota.setNeutralButton("Salir :(", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    mpDerrota.release();
+                    finish();
+                }
+            });
+
+            AlertDialog alert = derrota.create();
+            alert.show();
         }
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
+        // Se crea el menú principal (3 puntos)
         getMenuInflater().inflate(R.menu.menu_principal, menu);
         return true;
     }
@@ -357,6 +463,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo info) {
+        // Se crea el submenú de dificultades
         super.onCreateContextMenu(menu, v, info);
         MenuInflater mi = getMenuInflater();
         mi.inflate(R.menu.dificultad_menu, menu);
@@ -387,13 +494,12 @@ public class MainActivity extends AppCompatActivity {
      */
     @Override
     public boolean onContextItemSelected(MenuItem item) {
+        Intent intent = new Intent(contexto, MainActivity.class);
         switch (item.getItemId()) {
             case R.id.facil:
-                dificultadActual = TURNOS_FACIL;
                 inicializar(TURNOS_FACIL);
                 return true;
             case R.id.dificil:
-                dificultadActual = TURNOS_DIFICIL;
                 inicializar(TURNOS_DIFICIL);
                 return true;
         }
