@@ -24,9 +24,16 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.Random;
 
+/**
+ * Juego de Simón dice en Android, con animaciones y sonidos.
+ *
+ * @author LuciaLM
+ */
 public class MainActivity extends AppCompatActivity {
+    // Muy fácil (se puede cambiar) pero sirve para hacer pruebas rápidas.
     private final int TURNOS_FACIL = 5, TURNOS_DIFICIL = 10;
 
+    // Se usarán en el método elegirAudio()
     private final int VICTORIA = 1;
     private final int DERROTA = 0;
 
@@ -39,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
     private MediaPlayer mp0, mp1, mp2, mp3, mp4, mp5, mp6, mp7, mp8, mp9;
 
     private Random rnd = new Random();
-    private int contadorTurnos, contadorBotones;
+    private int contadorTurnos;
     private boolean ganado = false;
     private char posicion = 0;
 
@@ -48,7 +55,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         contexto = getApplicationContext();
-        contadorBotones = 0;
         contadorTurnos = 0;
 
         // MediaPlayers
@@ -114,8 +120,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Crea una nueva partida de la última dificultad que fuese seleccionada
-     * en el menú.
+     * Crea una nueva partida.
      *
      * @param dificultad
      */
@@ -190,9 +195,6 @@ public class MainActivity extends AppCompatActivity {
             x.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    // Contador botones
-                    contadorBotones++;
-
                     // TextField (se va rellenando hasta el penúltimo número adivinado)
                     textoRespuesta.setText((textoRespuesta == null) ? x.getText() : textoRespuesta.getText() + String.valueOf(x.getText()));
 
@@ -217,13 +219,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
             x.setEnabled(true);
-        }
-    }
-
-    private void manejoDigito(Button boton) {
-        System.out.println("ola");
-        if(!(String.valueOf(boton.getText()) == String.valueOf(numeroRecordar.charAt(contadorBotones - 1)))) {
-            perder();
         }
     }
 
@@ -306,20 +301,19 @@ public class MainActivity extends AppCompatActivity {
             }
 
             contadorTurnos++;
-            contadorBotones = 0;
-            //textoCifrasRecordar.setText("Cifras a adivinar: " + numeroRecordar.length());
+            textoCifrasRecordar.setText("Cifras a adivinar: " + numeroRecordar.length() + " de " + dificultad);
             textoRespuesta.setText("");
             numeroJugador = ""; // Resetear el número introducido
 
             if (contadorTurnos == dificultad) {
                 ganar();
             }
-        } else if (!comprobarRespuesta()) {
-            // Para que si detecta un número introducido mal, detenga el juego directamente y pierda
-            // (antes había que esperar a que se completara una cadena de la longitud del # a recordar)
-            if(!(String.valueOf(boton.getText()).equals(numeroRecordar.charAt(contadorBotones - 1)))) {
-                perder();
-            }
+        } else {
+            // Varias veces intenté implementar un contador que detectara el turno del botón pulsado
+            // y comparase el valor con el correspondiente en el número a recordar (no sé si tendría
+            // algo que ver con el tipo de dato String) conclusión: siempre había que llegar a la longitud de la
+            // cadena a recordar para que reconociera una derrota. Sigo sin entender qué falla.
+            perder();
         }
     }
 
@@ -393,8 +387,11 @@ public class MainActivity extends AppCompatActivity {
 
         AlertDialog.Builder victoria = new AlertDialog.Builder(this);
         victoria.setTitle("¡HAS GANADO!");
+        victoria.setCancelable(false); // Para que no se pueda cerrar clicando la pantalla.
+
         MediaPlayer mpVictoria = MediaPlayer.create(contexto, elegirAudio(VICTORIA));
         mpVictoria.start();
+
         victoria.setPositiveButton("Gracias :)", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 Toast.makeText(MainActivity.this, "¡Felicidades!", Toast.LENGTH_LONG).show();
@@ -424,6 +421,7 @@ public class MainActivity extends AppCompatActivity {
         if(numeroRecordar.length() == numeroJugador.length()) {
             AlertDialog.Builder derrota = new AlertDialog.Builder(this);
             derrota.setTitle("Has perdido");
+            derrota.setCancelable(false);
 
             MediaPlayer mpDerrota = MediaPlayer.create(contexto, elegirAudio(DERROTA));
             mpDerrota.start();

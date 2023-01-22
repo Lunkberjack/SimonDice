@@ -167,7 +167,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:paddingBottom="5sp"
-                android:text="Cifras: 0"
+                android:text="Cifras a adivinar:"
                 android:textAlignment="center"
                 android:textSize="30sp" />
         </TableRow>
